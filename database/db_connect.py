@@ -5,6 +5,8 @@ import os
 load_dotenv()
 
 
+# connection to database in mySQL. Hard coded port is for deployment on digitalocean, comment it if using localhost
+
 def connect():
     host = os.environ.get("HOST")
     user = os.environ.get("USER")
@@ -12,7 +14,6 @@ def connect():
     db = os.environ.get("DBNAME")
 
     env_variables_defined = host and user and password and db
-
     if env_variables_defined:
         return pymysql.connect(host=host,
                                port=25060,
@@ -20,9 +21,6 @@ def connect():
                                password=password,
                                database=db,
                                cursorclass=pymysql.cursors.DictCursor)
-
     else:
         raise KeyError('Some necessary environment variable(s) are not defined')
-
-
 

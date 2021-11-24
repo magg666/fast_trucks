@@ -1,124 +1,89 @@
 import sys
-from database.data_manager import get_all_countries, get_all_borders
-
-
-class RoadMap:
-    def __init__(self, countries, add_route):
-        self.countries = countries
-        self.truck_map = self.create_roadmap(countries, add_route)
-
-    def create_roadmap(self, countries, add_route):
-        roadmap = {}
-        for country in countries:
-            roadmap[country] = {}
-
-        roadmap.update(add_route)
-
-        for country, area in roadmap.items():
-            for adjacent_country, distance in area.items():
-                if not roadmap[adjacent_country].get(country, False):
-                    roadmap[adjacent_country][country] = distance
-        return roadmap
-
-    def get_countries(self):
-        return self.countries
-
-    def get_adjacent_countries(self, country):
-        neighborhood = []
-        for adjoining_country in self.countries:
-            if self.truck_map[country].get(adjoining_country, False):
-                neighborhood.append(adjoining_country)
-        return neighborhood
-
-    def get_distance(self, country1, country2):
-        return self.truck_map[country1][country2]
+from database.data_manager import get_all_shortcuts_of_countries, get_all_roads
+from model import RoadMap
 
 
 def get_path_and_distance(roadmap, start_country):
+    """
+    Function uses dijkstra's algorithm to calculate shortest paths from start
+    and finds list of countries of which that paths are composed
+    """
+
+    # Gets all countries from roadmap
     unvisited_countries = list(roadmap.get_countries())
-    shortest_path = {}
+
+    # This dictionary will store distances(or in other words - borders) that must be travers
+    # to visit every country
+    distance = {}
+
+    # This dictionary will store all countries for shortest path from start to end
     previous_countries = {}
+
+    # The distance between countries at first is set as infinity (sort of) because we don't know real values.
+    # It will be gradually updated
     max_value = sys.maxsize
     for country in unvisited_countries:
-        shortest_path[country] = max_value
-    shortest_path[start_country] = 0
+        distance[country] = max_value
+    distance[start_country] = 0
 
+    # This loop is executed until we visit all countries.
     while unvisited_countries:
         current_country = None
+
+        # This loop iterates over countries anf finds shortest distance
         for country in unvisited_countries:
             if current_country is None:
                 current_country = country
-            elif shortest_path[country] < shortest_path[current_country]:
+            elif distance[country] < distance[current_country]:
                 current_country = country
 
+        # This code checks for countries that are connected directly (borders with each other)
         neighbors = roadmap.get_adjacent_countries(current_country)
         for neighbor in neighbors:
-            temp_distance = shortest_path[current_country] + roadmap.get_distance(current_country, neighbor)
-            if temp_distance < shortest_path[neighbor]:
-                shortest_path[neighbor] = temp_distance
+            temp_distance = distance[current_country] + roadmap.get_distance(current_country, neighbor)
+            if temp_distance < distance[neighbor]:
+                distance[neighbor] = temp_distance
                 previous_countries[neighbor] = current_country
 
         unvisited_countries.remove(current_country)
 
-    return previous_countries, shortest_path
+    return previous_countries
 
 
-def get_countries_list():
-    countries = []
-    db_result = get_all_countries()
-    for record in db_result:
-        countries.append(record.get("shortcut"))
-    return countries
+def find_countries_and_path(end_country, start_country):
+    """
+    Function create roadmap and finds shortest path between given countries
+    """
 
+    # get list of all countries for our roadmap
+    all_countries = get_all_shortcuts_of_countries()
 
-def get_routes():
-    routes = get_all_borders()
-    return routes
+    # if destination exists in our database, code below creates data for road map - list of roads (connections)
+    if end_country.upper() in all_countries:
+        add_route = {}
+        for country in all_countries:
+            add_route[country] = {}
 
+        all_routes = get_all_roads()
+        for route in all_routes:
+            add_route[route.get("start")][route.get("end")] = route.get("distance")
 
-all_countries = get_countries_list()
-add_route = {}
-for country in all_countries:
-    add_route[country] = {}
+        # here is created roadmap - for america in this case
+        roadmap_america = RoadMap(all_countries, add_route)
 
-all_routes = get_routes()
-for route in all_routes:
-    add_route[route.get("start")][route.get("end")] = route.get("distance")
+        previous_countries = get_path_and_distance(roadmap_america, start_country)
 
-roadmap_america = RoadMap(all_countries, add_route)
+        # here the results of upper calculation are formatted
+        path = []
+        country = end_country.upper()
+        while country != start_country:
+            path.append(country)
+            country = previous_countries[country]
 
-previous_countries, shortest_path = get_path_and_distance(roadmap_america, "USA")
+        path.append(start_country)
+        reversed_path = ",".join(reversed(path))
 
+        return reversed_path, end_country.upper()
+    else:
+        return ["There isn't this country on our roadmap, sorry"], end_country
 
-# def print_result(previous, path2, start_node, target_node):
-#     path = []
-#     node = target_node
-#
-#     while node != start_node:
-#         path.append(node)
-#         node = previous[node]
-#
-#     # Add the start node manually
-#     path.append(start_node)
-#
-#     print("We found the following best path with a value of {}.".format(path2[target_node]))
-#     print(" -> ".join(reversed(path)))
-#
-#
-# print_result(previous_countries, shortest_path, "USA", "PAN")
-
-def find_countries_and_path(countries, start_country, end_country):
-    path = []
-    country = end_country
-    while country != start_country:
-        path.append(country)
-        country = countries[country]
-
-    path.append(start_country)
-    reversed_path = ",".join(reversed(path))
-
-    return reversed_path
-
-# print(find_countries_and_path(previous_countries, "USA", "PAN"))
-
-path_to_target = find_countries_and_path(previous_countries, "USA", "PAN")
