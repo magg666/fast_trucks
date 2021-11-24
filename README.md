@@ -11,7 +11,7 @@
 ## Task
 Create Web Api with endpoint where country code can be send and in return sender will receive list of countries his truck will travel through.
 
-## Further assumptions and conclusions (main)
+## Further assumptions and conclusions
 1. Countries may border one or more others. This means that the correct structure will be a graph
 2. The distances between countries are not given. But in reality, that would be one of the more important factors. I will try to include in the design the possibility of expansion with this factor
 3. The number of countries and connections between them is small, but in reality there would be many more countries and roads connecting them. In addition, the company is large, has a lot of trucks - there can be many inquiries for different routes. Therefore, I will use a SQL database to save my data
