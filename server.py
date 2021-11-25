@@ -20,9 +20,9 @@ def method_not_allowed(error):
 def not_found(error):
     return {'error': 'You should not go there...'}
 
-# @app.route("/", defaults={'path':''})
-# def serve(path):
-#     return send_from_directory(app.static_folder, 'index.html')
+@app.route("/", defaults={'path':''})
+def serve(path):
+    return send_from_directory(app.static_folder, 'index.html')
 
 # define route to api services. Allowed method - only GET
 @app.route('/api/<string:end_country>', methods=["GET"])
@@ -33,8 +33,8 @@ def api(end_country):
     else:
         return {'error': "Destination must be three-letter shortcut"}
 
-#
-# api2.add_resource(HelloApiHandler, '/flask/hello')
+
+api2.add_resource(HelloApiHandler, '/flask/hello')
 
 if __name__ == '__main__':
     app.run()
