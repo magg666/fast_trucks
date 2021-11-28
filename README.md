@@ -1,6 +1,14 @@
 # Fast Trucks
 > Project prepared as a recruitment task
 
+## Versions
+1. On branch 'main', [web page](https://fast-trucks-map-3xxri.ondigitalocean.app/api), is Web Api without UI.
+This version was completed within the stipulated deadline (two working days before the interview) and complies with the instructions.
+
+
+2. On branch 'frontend', [web page](https://fast-trucks-front-gw9ky.ondigitalocean.app/), is React/flask app with UI.
+This version has been expanded after the deadline and modifies the instructions provided.
+
 ## Preliminary assumptions
 1. There is a map of countries bordering each other
 2. Each country shares a border with at least one other country
@@ -25,6 +33,7 @@ Road map visualization:
 Due to the small size of the project I decided to use:
 * Database - MySql (managed database on digitalocean)
 * Backend - Python with Flask
+* React (second version, frontend branch)
 
 ## Deployment
 Project and its database is hosted on digitalocean
