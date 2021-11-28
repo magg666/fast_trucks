@@ -27,7 +27,7 @@ export class FormSelect extends React.Component {
                             onSubmit={(values, {setSubmitting}) => {
 
                                 setTimeout(() => {
-                                    axios.post('https://fast-trucks-front-gw9ky.ondigitalocean.app/', {
+                                    axios.post('https://fast-trucks-front-gw9ky.ondigitalocean.app/serve', {
                                         'start': values.start,
                                         'end': values.end
                                     })

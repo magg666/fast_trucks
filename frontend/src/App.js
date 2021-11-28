@@ -8,7 +8,7 @@ class App extends Component {
     state = {countries: [], error: null}
 
     componentDidMount() {
-        axios.get('https://fast-trucks-front-gw9ky.ondigitalocean.app/')
+        axios.get('https://fast-trucks-front-gw9ky.ondigitalocean.app/serve')
             .then(res => this.setState({countries: res.data}))
             .catch(error => this.setState({error}))
     }

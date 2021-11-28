@@ -22,8 +22,12 @@ def not_found(error):
     return {'error': 'You should not go there...'}
 
 
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
 # page for react requests, methods get and post
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/serve", methods=['GET', 'POST'])
 def serve():
     if flask.request.method == 'GET':
 
