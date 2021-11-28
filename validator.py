@@ -13,4 +13,5 @@ def is_shortcut_valid(shortcut):
     return str_shortcut.upper() and str_shortcut.isalpha() and len(str_shortcut) == SHORTCUT_LENGTH
 
 
-
+def is_list_valid(any_list):
+    return bool(any_list and isinstance(any_list, list))

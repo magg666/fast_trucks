@@ -1,14 +1,15 @@
-from flask import Flask, jsonify, send_from_directory
-from flask_restful import Api, Resource, reqparse
-# from flask_cors import CORS
-from api.api import HelloApiHandler
+import flask
+from flask import Flask, jsonify
+# from flask_cors import CORS  # comment for deploy
 
-from app import find_countries_and_path
+from app import find_road_between, get_countries, get_countries_between
 from validator import is_shortcut_valid
 
 app = Flask(__name__, static_url_path='', static_folder='frontend/build')
-# CORS(app)
-api2 = Api(app)
+
+
+# CORS(app)  # comment for deploy
+
 
 # handling basics errors
 @app.errorhandler(405)
@@ -20,21 +21,39 @@ def method_not_allowed(error):
 def not_found(error):
     return {'error': 'You should not go there...'}
 
-@app.route("/", defaults={'path':''})
-def serve(path):
-    return send_from_directory(app.static_folder, 'index.html')
+
+# page for react requests, methods get and post
+@app.route("/", methods=['GET', 'POST'])
+def serve():
+    if flask.request.method == 'GET':
+
+        # get list of all countries to fill form on main page
+        countries = get_countries()
+        return jsonify(countries)
+    else:
+
+        # receives request from react with form values and returns name of countries to travel via
+        data = flask.request.json
+        start_country = data.get('start')
+        end_country = data.get('end')
+
+        if start_country and end_country:
+
+            countries = get_countries_between(end_country, start_country)
+            return jsonify(countries)
+        else:
+            return {'error': 'Choose country'}
+
 
 # define route to api services. Allowed method - only GET
 @app.route('/api/<string:end_country>', methods=["GET"])
 def api(end_country):
     if is_shortcut_valid(end_country):
-        countries, proper_end_country = find_countries_and_path(end_country, start_country="USA")
-        return jsonify({'destination': proper_end_country, 'list': countries})
+        countries = find_road_between(end_country, start_country="USA")
+        return jsonify({'destination': end_country.upper(), 'list': countries})
     else:
         return {'error': "Destination must be three-letter shortcut"}
 
-
-api2.add_resource(HelloApiHandler, '/flask/hello')
 
 if __name__ == '__main__':
     app.run()

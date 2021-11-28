@@ -1,32 +1,23 @@
-import logo from './logo.svg';
 import './App.css';
-import React, { useEffect, useState } from 'react';
+import React, {Component} from 'react';
 import axios from 'axios'
+import {FormSelect} from "./components/FormSelect";
 
-function App() {
-  const [getMessage, setGetMessage] = useState({})
 
-  useEffect(()=>{
-    axios.get('https://fast-trucks-front-gw9ky.ondigitalocean.app/flask/hello').then(response => {
-      console.log("SUCCESS", response)
-      setGetMessage(response)
-    }).catch(error => {
-      console.log(error)
-    })
+class App extends Component {
+    state = {countries: [], error: null}
 
-  }, [])
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>React + Flask Tutorial</p>
-        <div>{getMessage.status === 200 ?
-          <h3>{getMessage.data.message}</h3>
-          :
-          <h3>LOADING</h3>}</div>
-      </header>
-    </div>
-  );
+    componentDidMount() {
+        axios.get('https://fast-trucks-front-gw9ky.ondigitalocean.app/')
+            .then(res => this.setState({countries: res.data}))
+            .catch(error => this.setState({error}))
+    }
+
+    render() {
+        return (
+            <FormSelect allCountries={this.state.countries}/>
+        )
+    }
 }
 
 export default App;

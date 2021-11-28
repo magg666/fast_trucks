@@ -15,12 +15,15 @@ def connect():
 
     env_variables_defined = host and user and password and db
     if env_variables_defined:
-        return pymysql.connect(host=host,
-                               port=25060,
-                               user=user,
-                               password=password,
-                               database=db,
-                               cursorclass=pymysql.cursors.DictCursor)
+        try:
+            return pymysql.connect(host=host,
+                                   port=25060,
+                                   user=user,
+                                   password=password,
+                                   database=db,
+                                   cursorclass=pymysql.cursors.DictCursor)
+        except pymysql.DatabaseError:
+            raise
     else:
         raise KeyError('Some necessary environment variable(s) are not defined')
 

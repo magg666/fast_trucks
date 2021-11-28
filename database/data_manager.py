@@ -16,6 +16,7 @@ def get_all_shortcuts_of_countries():
     Function grabs results from datatable where countries are stored.
     :return:list of strings (shortcuts for countries)
     """
+
     db = connect()
     cursor = db.cursor()
     cursor.execute("SELECT shortcut FROM countries")
@@ -27,6 +28,14 @@ def get_all_shortcuts_of_countries():
     return all_shortcuts
 
 
+def get_all_countries():
+    db = connect()
+    cursor = db.cursor()
+    cursor.execute("SELECT shortcut, country FROM countries")
+    result = cursor.fetchall()
+    return result
+
+
 def get_all_roads():
     """
     Function grabs all connections between countries
@@ -36,4 +45,12 @@ def get_all_roads():
     cursor = db.cursor()
     cursor.execute("SELECT start, end, distance FROM distances")
     result = cursor.fetchall()
+    return result
+
+
+def get_one_country(shortcut):
+    db = connect()
+    cursor = db.cursor()
+    cursor.execute("SELECT country FROM countries WHERE shortcut = %(shortcut)s", {'shortcut': shortcut})
+    result = cursor.fetchone()
     return result

@@ -1,6 +1,44 @@
 import sys
-from database.data_manager import get_all_shortcuts_of_countries, get_all_roads
+from database.data_manager import get_all_shortcuts_of_countries, get_all_roads, get_all_countries, get_one_country
+from validator import is_list_valid, is_shortcut_valid
 from model import RoadMap
+
+
+def get_list_from_db(func):
+    try:
+        data = func()
+    except Exception as e:
+        return []
+    if is_list_valid(data):
+        return data
+    else:
+        return []
+
+
+def create_roadmap():
+    # if destination exists in our database, code below creates data for road map - list of roads (connections)
+    all_countries_shortcuts = get_list_from_db(get_all_shortcuts_of_countries)
+    all_routes = get_list_from_db(get_all_roads)
+
+    if all_countries_shortcuts and all_routes:
+        add_route = {}
+        for country in all_countries_shortcuts:
+            add_route[country] = {}
+
+        for route in all_routes:
+            add_route[route.get("start")][route.get("end")] = route.get("distance")
+
+        # here is created roadmap - for america in this case
+        return RoadMap(all_countries_shortcuts, add_route)
+    else:
+        raise ValueError
+
+
+def get_and_validate_country_shortcut_from_user(shortcut):
+    if shortcut and is_shortcut_valid(shortcut):
+        return shortcut.upper()
+    else:
+        return ''
 
 
 def get_path_and_distance(roadmap, start_country):
@@ -50,40 +88,49 @@ def get_path_and_distance(roadmap, start_country):
     return previous_countries
 
 
-def find_countries_and_path(end_country, start_country):
+def find_road_between(end_country, start_country):
     """
-    Function create roadmap and finds shortest path between given countries
+    Function finds shortest path from start to end
+    :param end_country: string (shortcut)
+    :param start_country: string (shortcut)
+    :return: list of shortcuts of countries
     """
+    roadmap = create_roadmap()
+    all_countries = roadmap.countries
+    start = get_and_validate_country_shortcut_from_user(start_country)
+    destination = get_and_validate_country_shortcut_from_user(end_country)
 
-    # get list of all countries for our roadmap
-    all_countries = get_all_shortcuts_of_countries()
+    if start in all_countries and destination in all_countries:
+        previous_countries = get_path_and_distance(roadmap, start)
 
-    # if destination exists in our database, code below creates data for road map - list of roads (connections)
-    if end_country.upper() in all_countries:
-        add_route = {}
-        for country in all_countries:
-            add_route[country] = {}
-
-        all_routes = get_all_roads()
-        for route in all_routes:
-            add_route[route.get("start")][route.get("end")] = route.get("distance")
-
-        # here is created roadmap - for america in this case
-        roadmap_america = RoadMap(all_countries, add_route)
-
-        previous_countries = get_path_and_distance(roadmap_america, start_country)
-
-        # here the results of upper calculation are formatted
         path = []
-        country = end_country.upper()
-        while country != start_country:
-            path.append(country)
-            country = previous_countries[country]
+        via = destination
+        while via != start:
+            path.append(via)
+            via = previous_countries[via]
 
-        path.append(start_country)
-        reversed_path = ",".join(reversed(path))
+        path.append(start)
+        path.reverse()
 
-        return reversed_path, end_country.upper()
+        return path
     else:
-        return ["There isn't this country on our roadmap, sorry"], end_country
+        return ["There isn't {} or {} on our roadmap, sorry".format(start_country, end_country)]
 
+
+def get_countries_between(end_country, start_country):
+    """
+    Function transforms list of shortcuts that make a path into list of countries
+    :return: dictionary
+    """
+    countries = {}
+    shortcuts = find_road_between(end_country, start_country)
+    for short in shortcuts:
+        country = get_one_country(short).get('country')
+        countries.setdefault('countries', []).append(country)
+
+    return countries
+
+
+def get_countries():
+    db = get_all_countries()
+    return db
